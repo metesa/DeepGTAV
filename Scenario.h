@@ -64,7 +64,7 @@ public:
 	ScreenCapturer* screenCapturer = nullptr;
 	StringBuffer generateMessage();
 
-private:
+public:
 	void setVehiclesList();
 	void setPedsList();
 	void setTrafficSignsList();

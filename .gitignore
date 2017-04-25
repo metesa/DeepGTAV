@@ -1,2 +1,8 @@
 tmp/
 bin/Release/paths.xml
+Eigen
+lib/
+bin/
+DeepGTAV.VC.VC.opendb
+DeepGTAV.VC.db
+.vs/

@@ -41,7 +41,7 @@ Server::Server(unsigned int port) {
 
 }
 
-void Server::checkClient(){
+void Server::checkClient() {
 	SOCKET tmpSocket = SOCKET_ERROR;
 	tmpSocket = accept(ServerSocket, NULL, NULL);
 	if (tmpSocket != SOCKET_ERROR) {
@@ -59,7 +59,7 @@ void Server::checkRecvMessage() {
 	int result;
 	Document d;
 	int error;
-	
+
 	if (recvMessageLen == 0) {
 		recv(ClientSocket, (char*)&recvMessageLen, 4, 0); //Receive message len first
 		error = WSAGetLastError();
@@ -71,7 +71,7 @@ void Server::checkRecvMessage() {
 		}
 	}
 
-	while (bytesRead < recvMessageLen){
+	while (bytesRead < recvMessageLen) {
 		result = recv(ClientSocket, json + bytesRead, recvMessageLen - bytesRead, 0);
 		error = WSAGetLastError();
 		if (error == WSAEWOULDBLOCK) return;
@@ -120,19 +120,25 @@ void Server::checkRecvMessage() {
 	else {
 		return; //Invalid message
 	}
-	
+
 }
 
 void Server::checkSendMessage() {
 	int error;
 	int r;
 
-	if (sendOutputs && (((float)(std::clock() - lastSentMessage) / CLOCKS_PER_SEC) > (1.0 / scenario.rate))) {
-		if (messageSize == 0) {
+	if (sendOutputs)
+	{
+		scenario.setVehiclesList();
+		scenario.setReward();
+		if (!((float)(std::clock() - lastSentMessage) / CLOCKS_PER_SEC) > (1.0 / scenario.rate))
+			return;
+		if (messageSize == 0)
+		{
 			message = scenario.generateMessage();
 			chmessage = message.GetString();
 			messageSize = message.GetSize();
-		}		
+		}
 
 		if (!frameSent) {
 			if (!readyToSend) {
@@ -193,7 +199,7 @@ void Server::checkSendMessage() {
 			frameSent = false;
 		}
 		lastSentMessage = std::clock();
-	}	
+	}
 }
 
 void Server::resetState() {

@@ -62,6 +62,7 @@ private:
 	//helpers
 	void populateNodes(const char* pathsfile);
 	void setLinePoints(tNode* node, tLink link);
+	void drawDebug(Vehicle vehicle);
 	std::vector<tLinePoint> getCurrentLanePoints(tLink link, Vector3 currentPosition);
 public:
 	LaneRewarder(const char* pathsfile);

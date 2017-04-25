@@ -12,11 +12,58 @@ LaneRewarder::LaneRewarder(const char* pathsfile) {
 	}
 }
 
-LaneRewarder::~LaneRewarder(){
+LaneRewarder::~LaneRewarder() {
 	nodes.clear();
 }
 
+void LaneRewarder::drawDebug(Vehicle vehicle)
+{
+	Vector3  currentPosition = ENTITY::GET_ENTITY_COORDS(vehicle, FALSE);
+	int r = 0;
+	int g = 0;
+	int b = 255;
+	for (int i = 1; i <= 10; i++) {
+		r = 255 - r;
+		int nodeID = PATHFIND::GET_NTH_CLOSEST_VEHICLE_NODE_ID(currentPosition.x, currentPosition.y, currentPosition.z, i, 1, 300, 300);
+		tNode node = nodes[nodeID];
+		tLink link;
+		std::vector<tLinePoint> pointPair;
+		if (node.attr.special > 0) continue;
+
+		for (int j = 0; j < node.links.size(); j++) {
+			link = node.links.at(j);
+
+			g = g + 60;
+			if (g > 255)
+				g = 0;
+			for (int k = 0; k < link.linePoints.size(); k++)
+			{
+				//b = 255 - b;
+				tLinePoint point_pre = link.linePoints[k - 1];
+				tLinePoint point_now = link.linePoints[k];
+				Vector3 pre = point_pre.coord;
+				Vector3 now = point_now.coord;
+				if (k > 1)
+					GRAPHICS::DRAW_LINE(pre.x, pre.y, pre.z, now.x, now.y, now.z, r, g, b, 255);
+				//R G B A
+				//GRAPHICS::SET_DEBUG_LINES_AND_SPHERES_DRAWING_ACTIVE(true);
+				float box_size = 0.2;
+				GRAPHICS::DRAW_BOX(
+					now.x - box_size, now.y - box_size, now.z - box_size,
+					now.x + box_size, now.y + box_size, now.z + box_size
+					, r, g, b, 255);
+			}
+			if (j > 1)
+			{
+				Vector3 pre = node.links.at(j - 1).linePoints[0].coord;
+				Vector3 now = link.linePoints[0].coord;
+				GRAPHICS::DRAW_LINE(pre.x, pre.y, pre.z+0.5, now.x, now.y, now.z+0.5, 255, 255, 255, 255);
+			}
+		}
+	}
+}
 float LaneRewarder::computeReward(Vehicle vehicle) {
+	drawDebug(vehicle);
 	std::vector<tLinePoint> pointPair;
 	Vector3 laneCenter, currentPosition, forwardVector;
 	float d, a, direction, reward;
@@ -31,7 +78,7 @@ float LaneRewarder::computeReward(Vehicle vehicle) {
 		nodeID = PATHFIND::GET_NTH_CLOSEST_VEHICLE_NODE_ID(currentPosition.x, currentPosition.y, currentPosition.z, i, 1, 300, 300);
 		node = nodes[nodeID];
 		if (node.attr.special > 0) continue;
-		for (int j = 0; j < node.links.size(); j++){
+		for (int j = 0; j < node.links.size(); j++) {
 			link = node.links.at(j);
 			if (link.attr.shortcut || link.attr.width == -1) continue;
 			pointPair = getCurrentLanePoints(link, currentPosition);
@@ -68,7 +115,7 @@ float LaneRewarder::computeReward(Vehicle vehicle) {
 
 
 //helpers
-void LaneRewarder::populateNodes(const char* pathsfile){
+void LaneRewarder::populateNodes(const char* pathsfile) {
 	std::unordered_map<std::string, tNode> tmpnodes;
 	tLink *tmplinks = (tLink*)malloc(80592 * sizeof(*tmplinks)); //Too large for the stack, need to store in the heap
 	int i = 0;
@@ -207,7 +254,7 @@ void LaneRewarder::populateNodes(const char* pathsfile){
 	tNode node2;
 	tLink link;
 	float m;
-	for (i = 0; i < 80592; i++){
+	for (i = 0; i < 80592; i++) {
 		link = tmplinks[i];
 		node1 = tmpnodes[link._ref1];
 		node2 = tmpnodes[link._ref2];
@@ -231,7 +278,7 @@ void LaneRewarder::populateNodes(const char* pathsfile){
 	free(tmplinks);
 }
 
-void LaneRewarder::setLinePoints(tNode* node, tLink link){
+void LaneRewarder::setLinePoints(tNode* node, tLink link) {
 
 	tLinePoint linePoint;
 	int linesIn, linesOut, starti;
@@ -249,7 +296,7 @@ void LaneRewarder::setLinePoints(tNode* node, tLink link){
 		lineOffset = laneWidth / 2;
 		starti = 0;
 	}
-	else if (link.attr.lanesOut == 0){ //Usually interurban scenarios TODO
+	else if (link.attr.lanesOut == 0) { //Usually interurban scenarios TODO
 
 		if ((link.attr.lanesIn % 2) == 0) {
 			lineOffset = 0;
